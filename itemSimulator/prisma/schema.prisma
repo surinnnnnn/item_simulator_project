@@ -1,0 +1,86 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource dbGame {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+
+model User_info {
+  user_id         String      @id @map("user_id")
+  user_name       String      @map("user_name")
+  password        String      @map("password")
+  character_count Int         @default(0) @map("character_count")
+  createdAt       DateTime    @default(now()) @map("createAt")
+  updatedAt       DateTime    @updatedAt @map("updateAt")
+  Character       Character[]
+
+  @@map("User_info")
+}
+
+model Character {
+  character_id   Int       @id @default(autoincrement()) @map("character_id")
+  character_name String    @unique @map("character_name")
+  user_id        String    @map("user_id")
+  health         Int       @default(100) @map("health")
+  power          Int       @default(20) @map("power")
+  money          Int       @default(10000) @map("money")
+  createdAt      DateTime  @default(now()) @map("createAt")
+  updatedAt      DateTime  @updatedAt @map("updateAt")
+
+  User_info      User_info @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
+  Item_inventory Item_inventory[]
+  Item_equipped  Item_equipped?
+
+  @@index([user_id], map: "Character_user_id_fkey")
+  @@map("Character")
+}
+
+model Item {
+  item_Code Int      @id @map("item_Code")
+  item_Name String   @map("item_Name")
+  health    Int      @default(0) @map("health")
+  power     Int      @default(0) @map("power")
+  price     Int      @default(10) @map("price")
+  createdAt DateTime @default(now()) @map("createAt")
+  updatedAt DateTime @updatedAt @map("updateAt")
+  
+  Item_inventory Item_inventory[]
+  @@map("Item")
+}
+
+model Item_inventory {
+  inventory_No   Int  @id @default(autoincrement()) 
+  character_id   Int  @map("character_id")
+  item_Code Int?      @map("item_Code")
+  item_Name String?   @map("item_Name")
+  count     Int?      @map("count")
+  health    Int?      @map("health")
+  power     Int?      @map("power")
+  price     Int?      @map("price")
+  createdAt DateTime @default(now()) @map("createAt")
+  updatedAt DateTime @updatedAt @map("updateAt")
+
+  Item   Item? @relation(fields: [item_Code], references: [item_Code], onDelete: Cascade)
+  Character   Character @relation(fields: [character_id], references: [character_id], onDelete: Cascade)
+  @@unique([item_Code])
+  
+  Item_equipped  Item_equipped?
+  @@map("Item_inventory")
+}
+
+ model Item_equipped {
+  character_id   Int  @map("character_id")
+  item_Code Int      @map("item_Code")
+  health    Int      @map("health")
+  power     Int      @map("power")
+
+  Item_inventory Item_inventory @relation(fields: [item_Code], references: [item_Code], onDelete: Cascade)
+  Character Character @relation(fields: [character_id], references: [character_id], onDelete: Cascade)
+  @@id([character_id])
+  @@unique([item_Code])
+
+  @@map("Item_equippted")
+}
